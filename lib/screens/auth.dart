@@ -34,11 +34,23 @@ class _AuthScreenState extends State<AuthScreen> {
       return;
     }
 
-    if (_isLogin) {
-    } else {
-      try {
+    try {
+      if (_isLogin) {
+        final userCredentials = await _firebase.signInWithEmailAndPassword(
+            email: _emailAddress, password: _password);
+        print(userCredentials);
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                "Logged in successfully! Welcome ${userCredentials.user!.email}"),
+          ),
+        );
+      } else {
         final userCredentials = await _firebase.createUserWithEmailAndPassword(
             email: _emailAddress, password: _password);
+
+        print(userCredentials);
         ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -46,15 +58,14 @@ class _AuthScreenState extends State<AuthScreen> {
                 "Sign up successful! Welcome ${userCredentials.user!.email}"),
           ),
         );
-      } on FirebaseAuthException catch (error) {
-        ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content:
-                Text(error.message ?? 'An error occured! Please try again'),
-          ),
-        );
       }
+    } on FirebaseAuthException catch (error) {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error.message ?? 'An error occured! Please try again'),
+        ),
+      );
     }
   }
 
