@@ -1,4 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+final _firebase = FirebaseAuth.instance;
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -13,18 +16,45 @@ class _AuthScreenState extends State<AuthScreen> {
   String _emailAddress = '';
   String _password = '';
 
-  void _submitForm() {
+  void _submitForm() async {
     final isValid = _formKey.currentState!.validate();
-    if (isValid) {
-      _formKey.currentState!.save();
-      // print(_emailAddress);
-      // print(_password);
-      ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Processing Auth Data'),
-        ),
-      );
+    if (!isValid) {
+      return;
+    }
+    _formKey.currentState!.save();
+    // // print(_emailAddress);
+    // // print(_password);
+    // ScaffoldMessenger.of(context).clearSnackBars();
+    // ScaffoldMessenger.of(context).showSnackBar(
+    //   const SnackBar(
+    //     content: Text('Processing Auth Data'),
+    //   ),
+    // );
+    if (!context.mounted) {
+      return;
+    }
+
+    if (_isLogin) {
+    } else {
+      try {
+        final userCredentials = await _firebase.createUserWithEmailAndPassword(
+            email: _emailAddress, password: _password);
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                "Sign up successful! Welcome ${userCredentials.user!.email}"),
+          ),
+        );
+      } on FirebaseAuthException catch (error) {
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content:
+                Text(error.message ?? 'An error occured! Please try again'),
+          ),
+        );
+      }
     }
   }
 
